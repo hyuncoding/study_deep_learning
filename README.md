@@ -246,3 +246,133 @@
 #### 성능 평가
 
 <img src="./c_tensorflow/images/validation.png" width="700" style="margin-left: 0">
+
+### Callback API
+
+-   모델이 학습 중에 충돌이 발생하거나 네트워크가 끊기면, 모든 훈련 시간이 낭비될 수 있고,  
+    과적합을 방지하기 위해 훈련을 중간에 중지해야 할 수도 있다.
+-   모델이 학습을 시작하면 학습이 완료될 때까지 아무런 제어를 하지 못하게 되고,  
+    신경망 훈련을 완료하는 데에는 몇 시간 또는 며칠이 걸릴 수 있기 때문에 모델을 모니터링하고 제어할 수 있는 기능이 필요하다.
+-   훈련 시(`fit()`) `Callback API`를 등록시키면 반복 내에서 특정 이벤트 발생마다 등록된 `callback`이 호출되어 수행된다.
+
+**ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weight_only=False, mode='auto')**
+
+-   특정 조건에 따라 모델 또는 가중치를 파일로 저장한다.
+-   filepath: "weights.{epoch:03d}-{val_loss:.4f}-{acc:.4f}.weights.hdf5"와 같이 모델의 체크포인트를 저장한다.
+-   monitor: 모니터링할 성능 지표를 작성한다.
+-   save_best_only: 가장 좋은 성능을 나타내는 모델을 저장할지에 대한 여부
+-   save_weights_only: weights만 저장할지에 대한 여부
+-   mode: {auto, min, max} 중 한 가지를 작성한다. monitor의 성능 지표에 따라 좋은 경우를 선택한다.  
+    \*monitor의 성능 지표가 감소해야 좋은 경우 min, 증가해야 좋은 경우 max, monitor의 이름으로부터 자동으로 유추하고 싶다면 auto
+
+**ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=0, mode='auto',min_lr=0)**
+
+-   특정 반복동안 성능이 개선되지 않을 때, 학습률을 동적으로 감소시킨다.
+-   monitor: 모니터링할 성능 지표를 작성한다.
+-   factor: 학습률을 감소시킬 비유, 새로운 학습률 = 기존 학습률 \* factor
+-   patience: 학습률을 줄이기 전에 monitor할 반복 횟수
+-   mode: {auto, min, max} 중 한 가지를 작성한다. monitor의 성능 지표에 따라 좋은 경우를 선택한다.  
+    \*monitor의 성능 지표가 감소해야 좋은 경우 min, 증가해야 좋은 경우 max, monitor의 이름으로부터 자동으로 유추하고 싶다면 auto
+
+**EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto')**
+
+-   특정 반복동안 성능이 개선되지 않을 때, 학습을 조기에 중단한다.
+-   monitor: 모니터링할 성능 지표를 작성한다.
+-   patience: Early Stopping을 적용하기 전에 monitor할 반복 횟수
+-   mode: {auto, min, max} 중 한 가지를 작성한다. monitor의 성능 지표에 따라 좋은 경우를 선택한다.  
+    \*monitor의 성능 지표가 감소해야 좋은 경우 min, 증가해야 좋은 경우 max, monitor의 이름으로부터 자동으로 유추하고 싶다면 auto
+
+### CNN (Convolutional Neural Network), 합성곱 신경망
+
+-   실제 이미지 데이터는 분류 대상이 이미지에서 고정된 위치에 있지 않은 경우가 대부분이다.
+-   실제 이미지 데이터를 분류하기 위해서는, 이미지의 각 feature들을 그대로 학습하는 것이 아닌, CNN으로 패턴을 인식한 뒤 학습해야 한다.
+
+<div style="display: flex; width:70%; margin-bottom: 30px;">
+    <div>
+        <img src="./d_cnn/images/dogs01.png" width="500" style="margin-left: 20px">
+    </div>
+    <div>
+        <img src="./d_cnn/images/dogs02.png" width="720" style="margin-left: 80px">
+    </div>
+</div>
+
+-   이미지의 크기가 커질 수록 굉장히 많은 weight가 필요하기 때문에 분류기에 바로 넣지 않고, 이를 사전에 추출 및 축소해야 한다.
+-   CNN은 인간의 시신경 구조를 모방한 기술로서, 이미지의 패턴을 찾을 때 사용한다.
+-   Feature Extraction을 통해 각 단계를 거치면서, 함축된 이미지 조각으로 분리되고 각 이미지 조각을 통해 이미지의 패턴을 인식한다.
+
+<img src="./d_cnn/images/cnn01.png" width="700" style="margin-left: 0; margin-bottom: 20px">
+
+-   CNN은 분류하기에 적합한 최적의 feature를 추출하고, 최적의 feature를 추출하기 위한 최적의 Weight와 Filter를 계산한다.
+
+<img src="./d_cnn/images/cnn02.png" width="500" style="margin-left: 50px">
+
+---
+
+#### Filter
+
+-   보통 정방 행렬로 구성되어 있고, 원본 이미지에 슬라이딩 윈도우 알고리즘을 사용하여 순차적으로 새로운 픽셀값을 만들면서 적용한다.
+-   사용자가 목적에 맞는 특정 필터를 만들거나 기존에 설계된 다양한 필터를 선택하여 이미지에 적용한다.  
+    하지만, CNN은 최적의 필터값을 학습하여 스스로 최적화한다.
+
+<img src="./d_cnn/images/filter.gif" width="400" style="margin-left: 0px; margin-top: -30px; margin-bottom: -50px">
+<img src="./d_cnn/images/filter.png" width="500" style="margin-left: 0;">
+
+-   필터 하나 당, 이미지의 채널 수만큼 Kernel이 존재하고, 각 채널에 할당된 필터의 커널을 적용하여 출력 이미지를 생성한다.
+-   출력 feature map의 개수는 필터의 개수와 동일하다.
+
+<img src="./d_cnn/images/filter_channel.gif" width="500">
+
+#### Kernel
+
+-   filter 안에 1 ~ n 개의 커널이 존재한다. 커널의 개수는 반드시 이미지의 채널 수와 동일해야 한다.
+-   Kernel Size는 가로 X 세로를 의미하며, 가로와 세로는 서로 다를 수 있지만 보통은 일치시킨다.
+-   Kernel Size가 크면 클 수록 입력한 이미지에서 더 많은 feature 정보를 가져올 수 있지만,  
+    큰 사이즈의 Kernel로 Convolution Backbone 연산을 할 경우 훨씬 더 많은 연산량과 파라미터가 필요하다.
+
+<img src="./d_cnn/images/kernel.gif" width="500">
+
+#### Stride
+
+-   입력 이미지에 Convolution Filter를 적용할 때 Sliding Window가 이동하는 간격을 의미한다.
+-   기본 stride는 1이지만, 2를 적용하면 입력 feature map 대비 출력 feature map의 크기가 절반 정도로 줄어든다.
+-   stride를 키우면 feature 정보를 손실할 가능성이 높아지지만, 오히려 불필요한 특성을 제거하는 효과를 가져올 수 있고 Convolution 연산 속도를 향상시킨다.
+
+<div style="display: flex; width:70%; margin-top: 10px;">
+    <div>
+        <img src="./d_cnn/images/stride01.gif" width="600" style="margin-left: 0; margin-top: 0">
+    </div>
+    <div>
+        <img src="./d_cnn/images/stride02.gif" width="600" style="margin-left: 50px">
+    </div>
+</div>
+
+#### Padding
+
+-   Filter를 적용하여 Convolution 수행 시 출력 feature map이 입력 feature map 대비 계속해서 작아지는 것을 막기 위해 사용한다.
+-   Filter 적용 전, 입력 feature map의 상하좌우 끝에 각각 열과 행을 추가한 뒤, 0으로 채워서 크기를 증가시킨다.
+-   출력 이미지의 크기를 입력 이미지의 크기와 동일하게 유지하기 위해서 직접 계산할 필요 없이 "same"이라는 값을 통해 입력 이미지의 크기와 동일하게 맞출 수 있다.
+
+<img src="./d_cnn/images/padding.gif" width="600" style="margin-left: 0">
+
+#### Pooling
+
+-   Convolution이 적용된 feature map의 일정 영역별로 하나의 값을 추출하여 feature map의 사이즈를 줄인다.
+-   보통은 Convolution -> Relu activation -> Pooling 순서로 적용한다.
+-   비슷한 feature들이 서로 다른 이미지에서 위치가 달라지면서 다르게 해석되는 현상을 중화시킬 수 있고,  
+    feature map의 크기가 줄어들기 때문에 연산 성능이 향상된다.
+-   Max Pooling과 Average Pooling이 있으며, Max Pooling은 중요도가 가장 높은 feature를 추출하고, Average Pooling은 전체를 버무려서 추출한다.
+
+<img src="./d_cnn/images/pooling.gif" width="450" style="margin-top: 20px; margin-bottom: 30px">
+
+#### 🚩정리
+
+-   Stride를 증가시키는 것과 Pooling을 적용하는 것은 출력 feature map의 크기를 줄이는 데 사용하는 것이다.
+-   Convolution 연산을 진행하면서, feature map의 크기를 줄이면 위치 변화에 따른 feature의 영향도도 줄어들기 때문에 과적합을 방지할 수 있는 장점이 있다.
+-   Pooling의 경우 특정 위치의 feature 값이 손실되는 이슈 등으로 인하여 최근 Advanced CNN에서는 많이 사용되지 않는다.
+-   Classifier에서는 Fully Connected Layer의 지나친 연결로 인해 많은 파라미터가 생성되므로 오히려 과적합이 발생할 수 있다.
+
+<img src="./d_cnn/images/cnn03.png" width="850px">
+
+-   Dropout을 사용해서 Layer간 연결을 줄일 수 있으며 과적합을 방지할 수 있다.
+
+<img src="./d_cnn/images/dropout.png">
