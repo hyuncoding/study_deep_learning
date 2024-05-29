@@ -376,3 +376,101 @@
 -   Dropout을 사용해서 Layer간 연결을 줄일 수 있으며 과적합을 방지할 수 있다.
 
 <img src="./d_cnn/images/dropout.png">
+
+### CNN Performance
+
+-   CNN 모델을 제작할 때, 다양한 기법을 통해 성능 개선 및 과적합 개선이 가능하다.
+
+#### Weight Initialization, 가중치 초기화
+
+-   처음 가중치를 어떻게 줄 것인지를 정하는 방법이며, 처음 가중치를 어떻게 설정하느냐에 따라 모델의 성능이 크게 달라질 수 있다.
+
+> 1. 사비에르 글로로트 초기화
+>
+> -   고정된 표준편차를 사용하지 않고, 이전 층의 노드 수에 맞게 현재 층의 가중치를 초기화한다.
+> -   층마다 노드 개수를 다르게 설정하더라도 이에 맞게 가중치가 초기화되기 때문에 고정된 표준편차를 사용하는 것보다 이상치에 민감하지 않다.
+> -   활성화 함수가 ReLU일 때, 층이 지날 수록 활성화 값이 고르지 못하게 되는 문제가 생겨서, 출력층에서만 사용한다.
+>
+> <div style="display: flex; margin-left: 50px;">
+>
+>    <div>
+>        <img src="./d_cnn/images/xavier01.png">
+>    </div>
+>    <div>
+>        <img src="./d_cnn/images/xavier02.png" style="margin-left: 50px;">
+>    </div>
+>
+>    </div>
+
+> 2. 카이밍 히 초기화
+>
+> -   고정된 표준편차를 사용하지 않고, 이전 층의 노드 수에 맞게 현재 층의 가중치를 초기화한다.
+> -   층마다 노드 개수를 다르게 설정하더라도 이에 맞게 가중치가 초기화되기 때문에 고정된 표준편차를 사용하는 것보다 이상치에 민감하지 않다.
+> -   활성화 함수가 ReLU일 때, 추천하는 초기화 방법으로서, 층이 깊어지더라도 모든 활성값이 고르게 분포된다.
+>     <img src="./d_cnn/images/he.png" style="margin-left: 50px;">
+
+#### Batch Normalization, 배치 정규화
+
+-   입력 데이터 간에 값의 차이가 발생하면, 가중치의 비중도 달라지기 때문에 층을 통과할 수록 편차가 심해진다.  
+     이를 내부 공변량 이동(Internal Convariant Shift)이라고 한다.
+-   가중치의 값의 비중이 달라지면, 특정 가중치에 중점을 두면서 경사 하강법이 진행되기 때문에,  
+    모든 입력값을 표준 정규화하여 최적의 parameter를 보다 빠르게 학습할 수 있도록 해야한다.
+-   가중치를 초기화할 때 민감도를 감소시키고, 학습 속도 증가시키며, 모델을 일반화하기 위해서 사용한다.
+
+<div style="display: flex; width: 90%;">
+    <div>
+        <img src="./d_cnn/images/BN01.png" width="900" style="margin-top: 20px;">
+    </div>
+    <div>
+        <img src="./d_cnn/images/BN02.png" width="900">
+    </div>
+</div>
+
+-   BN은 activation function 앞에 적용하면, weight 값은 평균이 0, 분산이 1인 상태로 정규분포가 된다.
+-   ReLU가 activation으로 적용되면 음수에 해당하는(절반 정도) 부분이 0이 된다.  
+    이러한 문제를 해결하기 위해서 γ(감마)와 β(베타)를 사용해서 음수부분이 모두 0이 되는 것을 막아준다.
+
+<div style="display: flex; width: 70%;">
+    <div>
+        <img src="./d_cnn/images/BN03.png" width="1000" style="margin-top: 20px;">
+    </div>
+    <div>
+        <img src="./d_cnn/images/BN04.png" width="800">
+    </div>
+</div>
+
+#### Batch Size
+
+-   batch size를 작게 하면, 적절한 noise가 생겨서 overfitting을 방지하게 되고, 모델의 성능을 향상시키는 계기가 될 수 있지만, 너무 작아서는 안된다.
+-   batch size를 너무 작게 하는 경우에는 batch당 sample 수가 작아져서 훈련 데이터를 학습하는 데에 부족할 수 있다.
+-   따라서 굉장히 크게 주는 것 보다는 작게 주는 것이 좋으며, 이를 또 너무 작게 주어서는 안된다.  
+    **논문에 따르면 8보다 크고 32보다 작게 주는 것이 효과적이라고 한다.**
+
+<div style="display: flex; width: 70%;">
+    <div>
+        <img src="./d_cnn/images/batch_size01.png" width="800" style="margin-top: 10px">
+    </div>
+    <div>
+        <img src="./d_cnn/images/batch_size02.png" width="800">
+    </div>
+</div>
+
+#### Global Average Pooling
+
+-   이전의 Pooling들은 면적을 줄이기 위해 사용했지만, Global Average Pooling은 면적을 없애고 채널 수만큼 값을 나오게 한다.
+-   feature map의 가로 X 세로의 특정 영역을 Sub sampling 하지 않고, 채널별로 평균값을 추출한다.
+-   feature map의 채널 수가 많을 경우(보통 512개 이상) 이를 적용하고, 채널 수가 적다면 Flatten을 적용한다.
+-   Flatten 후에 Classification Dense Layer로 이어지면서 많은 파라미터들로 인한 overfitting 유발 가능성 증대 및 학습 시간 증가로 이어지기 때문에  
+    맨 마지막 feature map의 채널 수가 크다면 Global Average Pooling을 적용하는 것이 더 나을 수 있다.
+
+<img src="./d_cnn/images/global_average_pooling.png" width="650px">
+
+#### Weight Regularization (가중치 규제), Weight Decay (가중치 감소)
+
+-   loss function은 loss 값이 작아지는 방향으로 가중치를 update한다.
+-   하지만, loss를 줄이는 데에만 신경 쓰게 되면, 특정 가중치가 너무 커지면서 오히려 나쁜 결과를 가져올 수 있다.
+-   기존 가중치에 특정 연산을 수행하여 loss function의 출력값과 더해주면 loss function의 결과를 어느 정도 제어할 수 있게 된다.
+-   보통 파라미터가 많은 Dense Layer에서 많이 사용되고 가중치 규제보다는 loss function에 규제를 걸어 가중치를 감소시키는 원리이다.
+-   kernel_regularizer 파라미터에서 l1, l2를 선택할 수 있다.
+
+<img src="./d_cnn/images/regularization.png" width="450px">
