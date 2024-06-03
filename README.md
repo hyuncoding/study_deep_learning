@@ -474,3 +474,128 @@
 -   kernel_regularizer 파라미터에서 l1, l2를 선택할 수 있다.
 
 <img src="./d_cnn/images/regularization.png" width="450px">
+
+### Data Augmentation, 데이터 증강
+
+-   이미지의 종류와 개수가 적으면, CNN 모델의 성능이 떨어질 수밖에 없다. 또한, 몇 안 되는 이미지로 훈련시키면 과적합이 발생한다.
+-   CNN 모델의 성능을 높이고 과적합을 개선하기 위해서는 이미지의 종류와 개수가 많아야 한다. 즉, 데이터의 양을 늘려야 한다.
+-   이미지 데이터는 학습 데이터를 수집하여 양을 늘리기 쉽지 않기 때문에, 원본 이미지를 변형시켜서 양을 늘릴 수 있다.
+-   Data Augmentation을 통해 원본 이미지에 다양한 변형을 주어 학습 이미지 데이터를 늘리는 것과 유사한 효과를 볼 수 있다.
+-   원본 학습 이미지의 개수를 늘리는 것이 아닌 매 학습마다 개별 원본 이미지를 변형해서 학습을 수행한다.
+
+<img src="./e_augmentation/images/data_augmentation.png" width="400" style="margin-left: 30px">
+
+#### 공간 레벨 변형
+
+-   좌우 또는 상하 반전, 특정 영역만큼 확대, 축소, 회전 등으로 변형시킨다.
+
+<img src="./e_augmentation/images/spatial.png">
+
+#### 픽셀 레벨 변형
+
+-   밝기, 명암, 채도, 색상 등을 변형시킨다.
+
+<img src="./e_augmentation/images/pixel.png" width="200" style="margin-left: 10px">
+
+### 🚩정리
+
+#### 기본적으로 많이 사용되는 변환은 아래와 같다.
+
+-   Vertical
+-   Horizontal
+-   ShiftScaleRotation
+-   RandomCrop, CenterCrop, RandomBrightnessContrast
+-   ColorJitter
+-   CLAHE, Blur, CoarseDropout
+
+### Pretrained Model
+
+-   모델을 처음부터 학습하면 오랜 시간 학습을 해야한다. 이를 위해 대규모 학습 데이터 기반으로 사전에 훈련된 모델을 활용한다.
+-   대규모 데이터 세트에서 훈련되고 저장된 네트워크로서, 일반적으로 대규모 이미지 분류 작업에서 훈련된 것을 뜻한다.
+-   입력 이미지는 대부분 244 \* 244 크기이며, 모델별로 차이가 있다.
+-   자동차나 고양이 등을 포함한 1,000개의 클래스, 총 1,400만 개의 이미지로 구성된 ImageNet 데이터 세트로 사전 훈련되었다.
+
+<img src="./f_pretrained_model/images/pretrained_model.png">
+
+### ImageNet Large Scale Visual Recognition Challenge (ILSVRC)
+
+-   2017년까지 대회가 주최되었으며, 이후에도 좋은 모델들이 등장했고, 앞으로도 계속 등장할 것이다.
+-   메이저 플레이어들(구글, 마이크로소프트)이 만들어놓은 모델들도 등장했다.
+
+<img src="./f_pretrained_model/images/ILSVRC.png">
+
+### VGGNet (옥스포드 대학의 연구팀)
+
+-   2014년 ILSVRC에서 GoogLeNet이 1위, VGG는 2위를 차지했다.
+-   GoogLeNet의 오류율은 6.7%, VGG의 오류율은 7.3%dlrh, 0.6%p 차이밖에 나지 않았다.
+-   간결하고 단순한 아키텍처임에도 불구하고 1위인 GoogLeNet과 큰 차이 없는 성능을 보여 주목을 받게 되었다.
+-   네트워크 깊이에 따른 모델 성능의 영향에 대한 연구에 집중하여 만들어진 네트워크이다.
+-   신경망을 깊게 만들 수록 성능이 좋아짐을 확인하였지만 커널 사이즈가 클 수록 이미지 사이즈가 급격하게 축소되기 때문에,  
+    더 깊은 층을 만들기 어렵고 파라미터 개수와 연산량도 더 많이 필요하다는 것을 알았다.
+-   따라서 kernel 크기를 3X3으로 단일화했으며, Padding, Strides 값을 조정하여 단순한 네트워크로 구성되었다.
+-   2개의 3X3 커널은 5X5 커널과 동일한 크기의 feature map을 생성하기 때문에, 3X3 커널로 연산하면 층을 더 만들 수 있게 된다.
+
+<img src="./f_pretrained_model/images/VGG.png">
+
+### Inception Network (GoogLeNet)
+
+-   여러 사이즈의 커널들을 한꺼번에 결합하는 방식을 사용하며, 이를 묶어서 `inception module` 이라고 한다.
+-   여러 개의 `inception module`을 연속적으로 이어서 구성하고 여러 사이즈의 필터들이 서로 다른 공간 기반으로 `feature`들을 추출한다.
+-   `inception module`을 결합하면서 보다 풍부한 `Feature Extractor Layer`를 구성하게 된다.
+-   하지만 여러 사이즈의 커널을 결합하게 되면, `Convolution` 연산을 수행할 때 파라미터 수가 증가되고 과적합으로 이어진다.
+-   이를 극복하고자 연산을 수행하기 전에 `1X1 Convolution`을 적용해서 파라미터 수를 획기적으로 감소시킨다.
+-   `1X1 Convolution`을 적용하면 입력 데이터의 특징을 함축적으로 표현하면서 파라미터 수를 줄이는 차원 축소 역할을 수행하게 된다.
+
+<img src="./f_pretrained_model/images/GoogLeNet.png" width="550" style="margin-top:20px; margin-left: 0">
+<img src="./f_pretrained_model/images/Inception_Network.png" width="900" style="margin-top:20px; margin-left: 0">
+
+#### 1X1 Convolution
+
+-   행과 열의 크기 변환 없이 `Channel`의 수를 조절할 수 있고, `weight` 및 비선형성을 추가하는 역할을 한다.
+-   행과 열의 사이즈를 줄이고 싶다면, `Pooling`을 사용하면 되고, 채널 수만 줄이고 싶다면 `1X1 Convolution`을 사용하면 된다.
+
+<img src="./f_pretrained_model/images/1x1.png" width="800">
+
+### ResNet (마이크로소프트)
+
+-   `VGG` 이후 더 깊은 `Network`에 대한 연구가 증가했지만, `Network` 깊이가 깊어질 수록 오히려 `accuracy`가 떨어지는 문제가 있었다.
+-   층이 깊어질 수록 계속해서 기울기가 0에 가까워지는 `Gradient vanishing`이 발생하기 때문이다.
+
+<img src="./f_pretrained_model/images/ResNet01.png" width="400">
+
+-   이를 해결하고자 층을 만들되, Input 데이터와 결과가 동일하게 나올 수 있도록 하는 층을 연구하기 시작했다.  
+    함수로 나타내면 `H(x) = x`이다.
+-   하지만 활성화 함수를 통과한 값을 기존 Input 데이터와 동일하게 만드는 것은 굉장히 복잡했기 때문에  
+    `H(x) = F(x) + x` 즉, `F(x)`를 0으로 만드는 `F(x)`에 포커스를 하게 된다.
+-   `input`은 `x`이고, `Model`인 `F(x)`라는 일련의 과정을 거치면서 자신인 `x`가 더해져서 `output`으로 `F(x) + x`가 나오는 구조가 된다.
+
+<img src="./f_pretrained_model/images/ResNet02.png" style="margin:30px; margin-left: 0;">
+<img src="./f_pretrained_model/images/ResNet03.png" width="400" style="margin:30px; margin-left: 0;">
+
+### Transfer Learning, 전이 학습
+
+-   이미지 분류 문제를 해결하는 데에 사용했던 모델을 다른 데이터세트 혹은 다른 문제에 적용시켜 해결하는 것을 의미한다.
+-   즉, 사전에 학습된 모델을 다른 작업에 이용하는 것을 의미한다.
+-   Pretrained Model의 Convolutional Base 구조(Conv2D + Pooling)를 그대로 두고 분류기(FC)를 붙여서 학습시킨다.
+
+<div style="display: flex; margin-left:-10px">
+    <div>
+        <img src="./f_pretrained_model/images/transfer_learning01.png" width="150">
+    </div>
+    <div>
+        <img src="./f_pretrained_model/images/fc.png" width="600" style="margin-top: 10px; margin-left: 50px">
+    </div>
+</div>
+
+-   사전 학습된 모델의 용도를 변경하기 위한 층별 미세 조정(fine tuning)은 데이터 세트의 크기와 유사성을 기반으로 고민하여 조정한다.
+-   2018년 FAIR(Facebook AI Research) 논문에서 실험을 통해 '전이학습이 학습 속도 면에서 효과가 있다'라는 것을 밝혀냈다.
+
+<img src="./f_pretrained_model/images/transfer_learning02.png" width="400">
+
+### Scaling Preprocessing
+
+-   0 ~ 1, -1 ~ 1, z-score 변환 중에서 한 개를 선택하여 범위를 축소하는 작업을 의미한다.
+-   Pretrained Model은 주로 tf와 torch 프레임워크 방식을 사용한다.
+-   tf는 -1 ~ 1, torch는 z-score 변환하는 것이 각 프레임워크의 전통이다.
+
+<img src="./f_pretrained_model/images/scaling.png" width="400" style="margin-top:20px">
