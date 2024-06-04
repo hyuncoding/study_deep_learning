@@ -599,3 +599,21 @@
 -   tf는 -1 ~ 1, torch는 z-score 변환하는 것이 각 프레임워크의 전통이다.
 
 <img src="./f_pretrained_model/images/scaling.png" width="400" style="margin-top:20px">
+
+### Fine Tuning, 미세 조정
+
+-   ImageNet으로 학습된 Pretrained Model을 다른 목적 또는 다른 용도로 활용할 때 Feature Extractor의 Weight를 제어하기 위한 기법이다.
+-   특정 Layer들을 Freeze시켜서 학습에서 제외시키고 Learning Rate를 점차 감소시켜 적용한다.
+-   ImageNet과 유사한 데이터 세트이거나 개별 클래스 별로 데이터 건수가 작을 경우 사용을 권장한다.
+-   Fine Tuning이 언제나 모델의 좋은 성능을 가져오는 것은 아니기 때문에 적절히 사용할 수 있어야 한다.
+-   먼저 Classification Layers에만 학습을 시킨 뒤 전체에 학습을 시키는 순서로 진행하게 되며, 이를 위해 `fit()`을 최소 2번 사용한다.
+-   층별로 Freeze 혹은 UnFreeze 결정을 위해 미세 조정을 진행할 때, 학습률이 높으면 이전 지식을 잃을 위험이 높아지기 때문에 작은 학습률을 사용한다.
+
+<div style="display: flex;">
+    <div>
+        <img src="./f_pretrained_model/images/transfer_learning03.png" width="600">
+    </div>
+    <div>
+        <img src="./f_pretrained_model/images/transfer_learning04.png" width="500" style="margin-left: -80px">
+    </div>
+</div>
